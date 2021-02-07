@@ -7,13 +7,19 @@ const router = express.Router(); //sub package express ships with that helps us 
 
 router.get('/', (req, res, next) => { // route, event handler
     res.status(200).json({
-        message: 'Handling GET request/users'
+        message: 'Handling GET request to /users'
     });
 }); 
 
 router.post('/', (req, res, next) => { // route, event handler
+    // get user information
+    const user = {
+        name: req.body.name, 
+        handle: req.body.handle
+    };
     res.status(201).json({ // 201, successful, resource created
-        message: 'Handling POST request/users'
+        message: 'Handling POST request to /users',
+        createdUser: user
     });
 }); 
 

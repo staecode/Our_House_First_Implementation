@@ -1,19 +1,25 @@
 // at chats resource routes
 
 const express = require('express');
+const { request } = require('../../app');
 const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
 
 //register different routes
 
 router.get('/', (req, res, next) => { // route, event handler
     res.status(200).json({
-        message: 'Handling GET request/room'
+        message: 'Handling GET request to /rooms'
     });
 }); 
 
 router.post('/', (req, res, next) => { // route, event handler
+    const room = {
+        roomName: req.body.roomName,
+        creator: req.body.creator
+    };
     res.status(201).json({ // 201, successful, resource created
-        message: 'Handling POST request/room'
+        message: 'Handling POST request to /rooms',
+        createdRoom: room
     });
 }); 
 

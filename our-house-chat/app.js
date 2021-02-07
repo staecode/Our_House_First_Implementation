@@ -8,9 +8,12 @@ const bodyParser = require('body-parser'); // parse requests - url encoded or js
 const userRoutes = require('./api/routes/users');
 const roomRoutes = require('./api/routes/rooms');
 
+// logging w/format
 app.use(morgan('dev'));
+
 // which bodies are we parsing, javascript object confirguration simple bodies
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 
 // middleware!
 // routes that will handle requests
