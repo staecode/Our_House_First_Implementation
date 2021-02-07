@@ -1,7 +1,6 @@
 // at chats resource routes
 
 const express = require('express');
-const { request } = require('../../app');
 const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
 
 //register different routes
