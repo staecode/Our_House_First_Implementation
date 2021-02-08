@@ -14,9 +14,7 @@ mongoose.connect(
     'mongodb+srv://Staecode:' + 
     process.env.MONGO_ATLAS_PW + 
     '@cluster0.nmmfj.mongodb.net/<dbname>?retryWrites=true&w=majority',
-    {
-        useMongoClient: true
-    }
+    { useNewUrlParser: true, useUnifiedTopology: true }
 );
 
 // for development, see warnings in terminal
