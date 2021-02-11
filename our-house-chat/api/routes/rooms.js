@@ -113,14 +113,6 @@ router.delete('/:roomId', (req, res, next) => {
             error: err
         });
     });
-    // User.updateMany({'$pull': {"rooms": {"_id": id}}})
-    // .exec()
-    // .then(removed => {
-    //     console.log(removed);
-    // })
-    // .catch(err2 => {
-    //     console.log(err2);
-    // });
 });
 
 module.exports = router;

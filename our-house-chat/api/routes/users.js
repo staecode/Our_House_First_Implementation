@@ -37,7 +37,7 @@ router.post('/', (req, res, next) => { // route, event handler
             console.log(result);
                 // 201, successful, resource created
             res.status(201).json({ 
-            message: 'User ' + user.name + ' was created!',
+            message: 'User ' + user.handle + ' was created!',
             createdUser: user
         });
         })
@@ -46,7 +46,24 @@ router.post('/', (req, res, next) => { // route, event handler
             res.status(500).json({error: err});
         });
 
-}); 
+});
+
+// router.delete('/deleteroom/:roomId', (req, res, next) => {
+//     const id = req.params.roomId;
+//     console.log('Reached delete Room');
+//     User.find({rooms: {$all: {$elemMach: {_id: id}}}})
+//     .exec()
+//     .then(result => {
+//         console.log(result);
+//         res.status(200).json(result);
+//     })
+//     .catch(err => {
+//         console.log(err);
+//         res.status(500).json({
+//             error: err
+//         });
+//     });
+// });
 
 router.get('/:userId', (req, res, next) => {
     const id = req.params.userId;
@@ -105,5 +122,29 @@ router.delete('/:userId', (req, res, next) => {
         });
     });
 });
+
+router.get('/roomList/:userId', (req, res, next) => {
+    const id = req.params.userId;
+    User.findById(id)
+    .exec()
+    .then(doc => {
+        res.status(200).json({
+            roomList: doc.rooms
+        });
+        // write data to response
+        // console.log(doc);
+        // if(doc) {
+        //     res.status(200).json({doc});
+        // } else {
+        //     res.status(404).json({message: 'No valid entry found for provided id'});
+        // }
+    })
+    .catch(err => {
+        // couldn't get data, respond with error
+        console.log(err);
+        res.status(500).json({error: err});
+    });
+});
+
 
 module.exports = router;
