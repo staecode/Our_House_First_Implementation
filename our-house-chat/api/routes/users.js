@@ -9,10 +9,27 @@ const User = require('../models/user');
 
 router.get('/', (req, res, next) => { // route, event handler
     User.find() // return all of them
+    .select('name handle _id')
     .exec()
     .then(docs => {
-        console.log(docs);
-        res.status(200).json({docs});      
+        const response = {
+            count: docs.length,
+            users: docs.map( doc => {
+                return {
+                    name: doc.name,
+                    handle: doc.handle,
+                    _id: doc._id,
+                    // where to look next to get more information about each
+                    // individual document
+                    request: {
+                        type: 'GET',
+                        description: 'link to user object',
+                        url: 'http://localhost:3000/users/' + doc._id
+                    }
+                }
+            })
+        };
+        res.status(200).json({response});      
     })
     .catch(err => {
         console.log(err);
@@ -37,8 +54,17 @@ router.post('/', (req, res, next) => { // route, event handler
             console.log(result);
                 // 201, successful, resource created
             res.status(201).json({ 
-            message: 'User ' + user.handle + ' was created!',
-            createdUser: user
+            message: 'User ' + result.handle + ' was created!',
+            createdUser: {
+                name: result.name,
+                handle: result.handle,
+                _id: result.id,
+                request: {
+                    type: 'GET',
+                    description: 'link to created user',
+                    url: 'http://localhost:3000/users/' + result._id
+                }
+            }
         });
         })
         .catch(err => {
@@ -47,23 +73,6 @@ router.post('/', (req, res, next) => { // route, event handler
         });
 
 });
-
-// router.delete('/deleteroom/:roomId', (req, res, next) => {
-//     const id = req.params.roomId;
-//     console.log('Reached delete Room');
-//     User.find({rooms: {$all: {$elemMach: {_id: id}}}})
-//     .exec()
-//     .then(result => {
-//         console.log(result);
-//         res.status(200).json(result);
-//     })
-//     .catch(err => {
-//         console.log(err);
-//         res.status(500).json({
-//             error: err
-//         });
-//     });
-// });
 
 router.get('/:userId', (req, res, next) => {
     const id = req.params.userId;
@@ -86,7 +95,7 @@ router.get('/:userId', (req, res, next) => {
 });
 
 // change existing objects 
-router.put('/:userId', (req, res, next) => {
+router.patch('/:userId', (req, res, next) => {
     const id = req.params.userId;
     const updateOps = {};
     // build array of value pairs that need updating in database
@@ -123,6 +132,8 @@ router.delete('/:userId', (req, res, next) => {
     });
 });
 
+
+//get users list of rooms
 router.get('/roomList/:userId', (req, res, next) => {
     const id = req.params.userId;
     User.findById(id)

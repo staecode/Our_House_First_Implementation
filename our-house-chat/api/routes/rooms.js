@@ -10,10 +10,29 @@ const User = require('../models/user');
 
 router.get('/', (req, res, next) => { // route, event handler
     Room.find() //return all of them
+    .select('name creator _id')
     .exec()
     .then(docs => {
-        console.log(docs);
-        res.status(200).json({docs});
+        const response = {
+            count: docs.length,
+            //create new array
+            rooms: docs.map( doc => {
+                return {
+                    name: doc.name,
+                    creator: doc.creator,
+                    _id: doc._id,
+                    // where to look next to get more information about each
+                    // individual document
+                    request: {
+                        type: 'GET',
+                        description: 'link to room object',
+                        url: 'http://localhost:3000/rooms/' + doc._id
+                    }
+                }
+            })
+        };
+        // console.log(docs);
+        res.status(200).json({response});
     })
     .catch(err => {
         console.log(err);
@@ -39,8 +58,17 @@ router.post('/', (req, res, next) => { // route, event handler
         console.log(result);
             // 201, successful, resource created
         res.status(201).json({ 
-        message: 'Room ' + room.name + ' was created!',
-        createdRoom: room
+        message: 'Room ' + result.name + ' was created!',
+        createdRoom: {
+            name: result.name,
+            creator: result.creator,
+            _id: result.id,
+            request: {
+                type: 'GET',
+                description: 'link to created room',
+                url: 'http://localhost:3000/rooms/' + result._id
+            }
+        }
         });
     })
     .catch(err => {
@@ -78,7 +106,7 @@ router.get('/:roomId', (req, res, next) => {
     });
 });
 
-router.put('/:roomId', (req, res, next) => {
+router.patch('/:roomId', (req, res, next) => {
     const id = req.params.roomId;
     const updateOps = {};
     // build array of value pairs that need updating in database
