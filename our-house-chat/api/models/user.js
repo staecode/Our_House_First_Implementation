@@ -1,12 +1,14 @@
 // define model for user for mongoose
 
 const mongoose = require('mongoose');
+const Room = require('./room');
 
 //create layout of object
 const userSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId, //internal mongoose type
-    name: String,
-    handle: String
+    name: { type: String, required: true},
+    handle: { type: String, required: true},
+    rooms: [{}]
 });
 
 // think of model like a provided constructor to build these objects (based on schema layout)

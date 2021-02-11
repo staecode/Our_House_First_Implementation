@@ -69,7 +69,7 @@ router.get('/:userId', (req, res, next) => {
 });
 
 // change existing objects 
-router.patch('/:userId', (req, res, next) => {
+router.put('/:userId', (req, res, next) => {
     const id = req.params.userId;
     const updateOps = {};
     // build array of value pairs that need updating in database

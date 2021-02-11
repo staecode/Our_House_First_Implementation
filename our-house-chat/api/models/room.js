@@ -5,8 +5,8 @@ const mongoose = require('mongoose');
 //create layout of object
 const roomSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId, //internal mongoose type
-    name: String,
-    creator: String
+    name: { type: String, required: true},
+    creator: { type: mongoose.Schema.Types.ObjectId, required: true}
 });
 
 // think of model like a provided constructor to build these objects (based on schema layout)
