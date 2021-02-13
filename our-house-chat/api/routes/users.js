@@ -5,6 +5,7 @@ const express = require('express');
 const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
 const mongoose = require('mongoose');
 const User = require('../models/user');
+const Room = require('../models/room');
 
 //register different routes
 
@@ -144,15 +145,17 @@ router.get('/roomList/:userId', (req, res, next) => {
     .exec()
     .then(doc => {
         res.status(200).json({
-            roomList: doc.rooms
+            roomList: doc.rooms.map( room => {
+                return {
+                    _id: room,
+                    request: {
+                        type: 'GET',
+                        description: 'link to room object',
+                        url: 'http://localhost:3000/rooms/' + room
+                    }
+                }
+            })
         });
-        // write data to response
-        // console.log(doc);
-        // if(doc) {
-        //     res.status(200).json({doc});
-        // } else {
-        //     res.status(404).json({message: 'No valid entry found for provided id'});
-        // }
     })
     .catch(err => {
         // couldn't get data, respond with error
@@ -164,37 +167,42 @@ router.get('/roomList/:userId', (req, res, next) => {
 router.post('/addRoom/:userId/:roomId', (req, res, next) => {
     const id = req.params.userId;
     const r_id = req.params.roomId;
-    User.findById(id)
-    .exec()
-    .then(doc => {
-        if(doc) {
-            User.updateOne({_id: id}, {$push: {rooms: r_id}})
+
+    Room.findById(r_id)
+        .then(room => {
+            User.findById(id)
             .exec()
-            .then(result => {
-                res.status(200).json({
-                    message: "Room added to user: " + id
-                })
+            .then(doc => {
+                if(doc) {
+                    User.updateOne({_id: doc._id}, {$push: {rooms: r_id}})
+                    .exec()
+                    .then(result => {
+                        res.status(200).json({
+                            message: "Room added to user: " + doc._id,
+                            requests: [
+                                {
+                                    type: 'GET',
+                                    description: 'link to created room',
+                                    url: 'http://localhost:3000/rooms/' + r_id
+                                }
+                            ]
+                        })
+                    })
+                    .catch(err_add => {
+                        console.log(err_add);
+                    })
+                }
             })
-            .catch(err2 => {
-                console.log(err2);
+            .catch(err_user_find => {
+                // couldn't get data, respond with error
+                 res.status(500).json({error: err_user_find});
             })
-        }
-        // res.status(200).json({
-        //     roomList: doc.rooms
-        // });
-        // write data to response
-        // console.log(doc);
-        // if(doc) {
-        //     res.status(200).json({doc});
-        // } else {
-        //     res.status(404).json({message: 'No valid entry found for provided id'});
-        // }
-    })
-    .catch(err => {
-        // couldn't get data, respond with error
-        console.log(err);
-        res.status(500).json({error: err});
-    });
+        })
+        .catch(err_room_find => {
+            res.status(500).json({
+                message: 'Room not found'
+            });
+        });
 });
 
 

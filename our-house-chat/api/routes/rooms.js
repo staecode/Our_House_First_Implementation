@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
 const mongoose = require('mongoose');
+const room = require('../models/room');
 
 const Room = require('../models/room');
 const User = require('../models/user');
@@ -45,38 +46,60 @@ router.get('/', (req, res, next) => { // route, event handler
 
 router.post('/', (req, res, next) => { // route, event handler
     // get room information
-    const room = new Room ({
-        // auto create unique id
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        creator: req.body.creator,
-        create_date: Date.now()
-    });
-    // save object in database
-    // post result to console
-    room.save()
+    const id = req.body.creator;
+    User.findById(id)
+        .then(user => {
+            if(!user) {
+                return res.status(404).json({
+                    message: "User not found"
+                });
+            } else {
+                const room = new Room ({
+                    // auto create unique id
+                    _id: new mongoose.Types.ObjectId(),
+                    name: req.body.name,
+                    creator: user._id,
+                    create_date: Date.now()
+                });
+                return room.save();
+            }
+    })
     .then(result => {
-        // 201, successful, resource created
-        res.status(201).json({
-        message: 'Room ' + result.name + ' was created!',
-        createdRoom: {
-            name: result.name,
-            creator: result.creator,
-            _id: result.id,
-            create_date: result.create_date,
-            requests: [
-                {
-                    type: 'GET',
-                    description: 'link to created room',
-                    url: 'http://localhost:3000/rooms/' + result._id
-                },
-                {
-                    type: 'POST',
-                    description: 'link to add room to user',
-                    url: 'http://localhost:3000/users/addRoom/' + result.creator + '/' + result._id
+        User.findById(id)
+            .exec()
+            .then(doc => {
+                if(doc) {
+                    User.updateOne({_id: doc._id}, {$push: {rooms: result._id}})
+                    .exec()
+                    .then(added => {
+                        res.status(201).json({
+                            message: 'Room ' + result.name + ' was created!',
+                            createdRoom: {
+                                name: result.name,
+                                creator: doc._id,
+                                _id: result._id,
+                                create_date: result.create_date,
+                                requests: [
+                                    {
+                                        type: 'GET',
+                                        description: 'link to created room',
+                                        url: 'http://localhost:3000/rooms/' + result._id
+                                        
+                                    },
+                                    {
+                                        type: 'GET',
+                                        description: 'Get user who created room',
+                                        url: 'http://localhost:3000/users/' + doc._id
+                                    }
+                                ]
+                            }
+                        });
+                    })
+                    .catch(err_add => {
+                        console.log(err_add);  
+                    })
                 }
-            ]
-        }})      
+            })
     })     
     .catch(err => {
         console.log(err);
