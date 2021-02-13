@@ -8,7 +8,7 @@ const userSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId, //internal mongoose type
     name: { type: String, required: true},
     handle: { type: String, required: true},
-    rooms: [{}]
+    rooms: [{type: mongoose.Schema.Types.ObjectId, ref: 'Room'}]
 });
 
 // think of model like a provided constructor to build these objects (based on schema layout)
