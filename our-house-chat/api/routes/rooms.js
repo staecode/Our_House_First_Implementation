@@ -6,44 +6,16 @@ const mongoose = require('mongoose');
 // mongodb schemas
 const Room = require('../models/room');
 const User = require('../models/user');
+// outside functions
+const checkAuth = require('../middleware/check-auth');
+const RoomsController = require('../controllers/rooms');
+
 
 //register different routes
 
-router.get('/', (req, res, next) => { // route, event handler
-    Room.find() //return all of them
-    .select('name creator _id')
-    .exec()
-    .then(docs => {
-        const response = {
-            count: docs.length,
-            //create new array
-            rooms: docs.map( doc => {
-                return {
-                    name: doc.name,
-                    creator: doc.creator,
-                    _id: doc._id,
-                    // where to look next to get more information about each
-                    // individual document
-                    request: {
-                        type: 'GET',
-                        description: 'link to room object',
-                        url: 'http://localhost:3000/rooms/' + doc._id
-                    }
-                }
-            })
-        };
-        // console.log(docs);
-        res.status(200).json({response});
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: err
-        });
-    });
-});
+router.get('/',  checkAuth, RoomsController.rooms_get_all);
 
-router.post('/', (req, res, next) => { // route, event handler
+router.post('/', checkAuth, (req, res, next) => { // route, event handler
     // get room information
     const id = req.body.creator;
     User.findById(id)
@@ -106,7 +78,7 @@ router.post('/', (req, res, next) => { // route, event handler
     });
 });
 
-router.get('/:roomId', (req, res, next) => {
+router.get('/:roomId', checkAuth, (req, res, next) => {
     const id = req.params.roomId;
     Room.findById(id)
     .exec()
@@ -126,7 +98,7 @@ router.get('/:roomId', (req, res, next) => {
     });
 });
 
-router.patch('/:roomId', (req, res, next) => {
+router.patch('/:roomId', checkAuth, (req, res, next) => {
     const id = req.params.roomId;
     const updateOps = {};
     // build array of value pairs that need updating in database
@@ -148,7 +120,7 @@ router.patch('/:roomId', (req, res, next) => {
     });
 });
 
-router.delete('/:roomId', (req, res, next) => {
+router.delete('/:roomId', checkAuth, (req, res, next) => {
     const id = req.params.roomId;
     Room.remove({_id: id})
     .exec()

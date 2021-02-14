@@ -2,9 +2,11 @@
 
 const e = require('express');
 const express = require('express');
-const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
+const router = express.Router(); // sub package express ships with that helps us arrive at different endpoints with different http words
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt'); //password hashing
+const bcrypt = require('bcrypt'); // password hashing
+const jwt = require('jsonwebtoken'); // token creation
+const checkAuth = require('../middleware/check-auth');
 
 
 const User = require('../models/user');
@@ -47,47 +49,129 @@ router.get('/', (req, res, next) => { // parms: route, event handler
     });
 }); 
 
-router.post('/signup', (req, res, next) => { // route, event handler
-    // get user information
-    const user = new User({
-        // auto create unique id
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name, 
-        handle: req.body.handle,
-        password: bcrypt.hash(req.body.password), //hash password with package
-        rooms: []
-    });
-    // save object in database
-        user.save()
-        .then(result => {
-            console.log(result);
-                // 201, successful, resource created
-            res.status(201).json({ 
-            message: 'User ' + result.handle + ' was created!',
-            createdUser: {
-                name: result.name,
-                handle: result.handle,
-                _id: result.id,
-                password: result.password,
-                // provide response that allows domino to next execution
-                request: {
-                    type: 'GET',
-                    description: 'link to created user',
-                    url: 'http://localhost:3000/users/' + result._id
-                }
+router.post('/login', (req, res, next) => {
+    User.find({handle: req.body.handle}) 
+    .exec()
+    .then(user => { // empty or one user 'array'
+        if(user.length < 1) {
+            return res.status(401).json({
+                message: 'Authentication Failed'
+            });
+        }
+        // compare coming in plain text to stored
+        // have to use bcrypt compare because it knows the algorithm
+        // for hashing
+        bcrypt.compare(req.body.password, user[0].password, (err, result) => {
+            if(err) {
+                return res.status(401).json({
+                    message: 'Authentication Failed'
+                });
+            } 
+            if(result) {
+                //build element of my json web token
+                const token = jwt.sign(
+                    {
+                        handle: user[0].handle,
+                        userID: user[0]._id
+                    }, 
+                    "" + process.env.JWT_KEY, 
+                    {
+                        expiresIn: "1h"
+                    }
+                );
+                return res.status(200).json({
+                    message: 'Authentication Successful',
+                    token: token
+                });
             }
-        });
+            // same error message occurs at all levels so as not to 
+            // tell user attempting to log in more information than 
+            // necessary about credentials, in case it is malicious
+            // (password incorrect lets them know they have a 
+            // successful username)
+            return res.status(401).json({
+                message: 'Authentication Failed'
+            });
         })
-        .catch(err => {
-            res.status(500).json({error: err});
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: err
         });
-
+    });
 });
 
-router.get('/:userId', (req, res, next) => {
+router.post('/signup', (req, res, next) => { // route, event handler
+    // first check handle availibility 
+    User.find({handle: req.body.handle})
+    .exec() // creates promise
+    .then(user => {
+        if(user.length >= 1) {
+            // conflict 409 or unprocessable 422
+            return res.status(409).json({
+                message: 'User with handle is already in database'
+            });
+        } else {
+            // now start adding
+            // hash password with package
+            // dictionary tables exist, database access may be able to get
+            // access to simple passwords
+            // so salting adds extra characters to strings, to break them up
+            // and make them non recognizable 
+            // (think discrete structures and encryption - the formulas that 
+            // encode and decode can be recreated)
+            // seconde parm is "salting rounds"
+            bcrypt.hash(req.body.password, 10, (err, hash) => {
+                if(err) {
+                    return res.status(500).json({
+                        error: err
+                    }); 
+                } else {
+                // get user information
+                const user = new User({
+                    // auto create unique id
+                    _id: new mongoose.Types.ObjectId(),
+                    name: req.body.name, 
+                    handle: req.body.handle,
+                    password: hash,
+                    rooms: []
+                });
+                // save object in database
+                    user.save()
+                    .then(result => {
+                        console.log(result);
+                            // 201, successful, resource created
+                        res.status(201).json({ 
+                        message: 'User ' + result.handle + ' was created!',
+                        createdUser: {
+                            name: result.name,
+                            handle: result.handle,
+                            _id: result.id,
+                            password: result.password,
+                            // provide response that allows domino to next execution
+                            request: {
+                                type: 'GET',
+                                description: 'link to created user',
+                                url: 'http://localhost:3000/users/' + result._id
+                            }
+                        }
+                    });
+                    })
+                    .catch(err => {
+                        res.status(500).json({error: err});
+                    });            
+                }
+            });
+        }
+    })
+});
+
+router.get('/:userId', checkAuth, (req, res, next) => {
     const id = req.params.userId;
     User.findById(id)
     .exec()
+    // need to fix, should not display all fields (docs, map etc)
     .then(doc => {
         // write data to response
         console.log(doc);
@@ -105,7 +189,7 @@ router.get('/:userId', (req, res, next) => {
 });
 
 // change existing objects 
-router.patch('/:userId', (req, res, next) => {
+router.patch('/:userId', checkAuth, (req, res, next) => {
     const id = req.params.userId;
     const updateOps = {};
     // build array of value pairs that need updating in database
@@ -127,7 +211,7 @@ router.patch('/:userId', (req, res, next) => {
     });
 });
 
-router.delete('/:userId', (req, res, next) => {
+router.delete('/:userId', checkAuth, (req, res, next) => {
     const id = req.params.userId;
     User.remove({_id: id})
     .exec()
@@ -144,7 +228,7 @@ router.delete('/:userId', (req, res, next) => {
 
 
 //et users list of rooms
-router.get('/roomList/:userId', (req, res, next) => {
+router.get('/roomList/:userId', checkAuth, (req, res, next) => {
     const id = req.params.userId;
     User.findById(id)
     .exec()
@@ -169,7 +253,7 @@ router.get('/roomList/:userId', (req, res, next) => {
     });
 });
 
-router.post('/addRoom/:userId/:roomId', (req, res, next) => {
+router.post('/addRoom/:userId/:roomId', checkAuth, (req, res, next) => {
     const id = req.params.userId;
     const r_id = req.params.roomId;
 
