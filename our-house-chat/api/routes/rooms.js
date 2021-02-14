@@ -3,8 +3,7 @@
 const express = require('express');
 const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
 const mongoose = require('mongoose');
-const room = require('../models/room');
-
+// mongodb schemas
 const Room = require('../models/room');
 const User = require('../models/user');
 

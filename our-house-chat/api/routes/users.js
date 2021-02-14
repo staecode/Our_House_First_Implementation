@@ -4,14 +4,18 @@ const e = require('express');
 const express = require('express');
 const router = express.Router(); //sub package express ships with that helps us arrive at different endpoints with different http words
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt'); //password hashing
+
+
 const User = require('../models/user');
 const Room = require('../models/room');
 
 //register different routes
 
-router.get('/', (req, res, next) => { // route, event handler
+router.get('/', (req, res, next) => { // parms: route, event handler
     User.find() // return all of them
     .select('name handle _id rooms')
+    .populate('rooms')
     .exec()
     .then(docs => {
         console.log(docs);
@@ -43,18 +47,18 @@ router.get('/', (req, res, next) => { // route, event handler
     });
 }); 
 
-router.post('/', (req, res, next) => { // route, event handler
+router.post('/signup', (req, res, next) => { // route, event handler
     // get user information
     const user = new User({
         // auto create unique id
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name, 
         handle: req.body.handle,
+        password: bcrypt.hash(req.body.password), //hash password with package
         rooms: []
     });
     // save object in database
-    // post result to console
-    user.save()
+        user.save()
         .then(result => {
             console.log(result);
                 // 201, successful, resource created
@@ -64,6 +68,8 @@ router.post('/', (req, res, next) => { // route, event handler
                 name: result.name,
                 handle: result.handle,
                 _id: result.id,
+                password: result.password,
+                // provide response that allows domino to next execution
                 request: {
                     type: 'GET',
                     description: 'link to created user',
@@ -73,7 +79,6 @@ router.post('/', (req, res, next) => { // route, event handler
         });
         })
         .catch(err => {
-            console.log(err);
             res.status(500).json({error: err});
         });
 

@@ -4,8 +4,10 @@ const express = require('express'); // package added via npm
 const app = express(); // can use utility methods, functionality etc
 const morgan = require('morgan'); // logging
 const bodyParser = require('body-parser'); // parse requests - url encoded or json
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // database interface tool
 
+
+// express router
 const userRoutes = require('./api/routes/users');
 const roomRoutes = require('./api/routes/rooms');
 

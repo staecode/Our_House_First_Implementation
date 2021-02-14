@@ -8,6 +8,7 @@ const userSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId, //internal mongoose type
     name: { type: String, required: true},
     handle: { type: String, required: true},
+    password: { type: String, required: true},
     rooms: [{type: mongoose.Schema.Types.ObjectId, ref: 'Room'}]
 });
 
