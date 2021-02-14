@@ -9,6 +9,7 @@ const User = require('../models/user');
 // outside functions
 const checkAuth = require('../middleware/check-auth');
 const RoomsController = require('../controllers/rooms');
+const room = require('../models/room');
 
 
 //register different routes
@@ -17,7 +18,7 @@ router.get('/',  checkAuth, RoomsController.rooms_get_all);
 
 router.post('/', checkAuth, (req, res, next) => { // route, event handler
     // get room information
-    const id = req.body.creator;
+    const id = req.userObj.userId;
     User.findById(id)
         .then(user => {
             if(!user) {
@@ -83,8 +84,6 @@ router.get('/:roomId', checkAuth, (req, res, next) => {
     Room.findById(id)
     .exec()
     .then(doc => {
-        // write data to response
-        console.log(doc);
         if(doc) {
             res.status(200).json({doc});
         } else {
@@ -93,7 +92,6 @@ router.get('/:roomId', checkAuth, (req, res, next) => {
     })
     .catch(err => {
         // couldn't get data, respond with error
-        console.log(err);
         res.status(500).json({error: err});
     });
 });
@@ -122,17 +120,39 @@ router.patch('/:roomId', checkAuth, (req, res, next) => {
 
 router.delete('/:roomId', checkAuth, (req, res, next) => {
     const id = req.params.roomId;
-    Room.remove({_id: id})
+    const user = req.userObj.userId;
+    console.log(user);
+    Room.findById(id)
     .exec()
-    .then(result => {
-        res.status(200).json(result);
+    .then(room => {
+        if(room) {
+            if(room.creator != user) {
+                    return res.status(401).json({
+                        message: 'Delete not authorized'
+                    });
+                } 
+                Room.remove({_id: id})
+                .exec()
+                .then(result => {
+                    res.status(200).json(result);
+                })
+                .catch(err => {
+                    res.status(500).json({
+                        error: err
+                    });
+                });
+        } else {
+            res.status(404).json({message: 'No valid entry found for provided id'});
+        }
+        // if(room.length >= 1) {
+        //     console.log(room[0]);
+            //
+        // }
     })
     .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: err
-        });
+        // couldn't get data, respond with error
+        res.status(500).json({error: err});
     });
-});
+  });
 
 module.exports = router;
