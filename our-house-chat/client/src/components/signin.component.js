@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 
-export default class SignUp extends Component {
+export default class SignIn extends Component {
 
     constructor(props) {
         super(props);
 
-        this.onChangeName = this.onChangeName.bind(this);
         this.onChangeHandle = this.onChangeHandle.bind(this);
         this.onChangePassword = this.onChangePassword.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
 
         this.state = {
-            name: '',
             handle: '',
             password: '',
         }
@@ -42,25 +39,20 @@ export default class SignUp extends Component {
         e.preventDefault();
 
         const user = {
-            name: this.state.name,
             handle: this.state.handle,
             password: this.state.password
         }
 
         console.log(user);
 
-        axios.post('http://localhost:5000/users/signup', user)
-        .then(res => console.log(res.data))
-        .catch(err => console.log(err));
-
-        // window.location = '/signin';
+        window.location = '/';
     }
 
     render() {
         return (
             <div>
-                <h2>Sign Up!</h2>
-                <h3>Create New User</h3>
+                <h2>Welcome to Our House</h2>
+                <h3>Sign In</h3>
                 <form onSubmit={this.onSubmit}>
                     <div className="form-group"> 
                     <label>Name: </label>
@@ -76,7 +68,7 @@ export default class SignUp extends Component {
                     <label>Handle: </label>
                     <input type='text'
                         required
-                        placeholder='Create Handle'
+                        placeholder='Enter Handle'
                         className='form-control'
                         value={this.state.handle}
                         onChange={this.onChangeHandle}
@@ -96,6 +88,7 @@ export default class SignUp extends Component {
                         <input type='submit' value='SignUp' className='btn btn-primary' />
                     </div>
                 </form>
+                <a href='/signup'>No account? No problem, sign up today!</a>
             </div>
         )
     }

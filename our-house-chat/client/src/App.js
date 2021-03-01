@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import Navbar from './components/navbar.component';
 import SignUp from './components/signup.component';
+import SignIn from './components/signin.component';
 
 function App() {
     return ( 
@@ -12,6 +13,7 @@ function App() {
             <Navbar />
             <br />
             <Route path='/signup' component={SignUp} />
+            <Route path='/signin' component={SignIn} />
         </Router>
         </div>
     )

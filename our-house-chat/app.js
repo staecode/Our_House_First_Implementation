@@ -1,7 +1,6 @@
 //uses express application
 
 const express = require('express'); // package added via npm
-const app = express(); // can use utility methods, functionality etc
 const morgan = require('morgan'); // logging
 const bodyParser = require('body-parser'); // parse requests - url encoded or json
 const mongoose = require('mongoose'); // database interface tool
@@ -24,7 +23,9 @@ process.on('warning', (warning) => {
     console.warn(warning.name);    // Print the warning name
     console.warn(warning.message); // Print the warning message
     console.warn(warning.stack);   // Print the stack trace
-  });
+});
+
+const app = express(); // can use utility methods, functionality etc
 
 // logging w/format
 app.use(morgan('dev'));
@@ -39,7 +40,7 @@ app.use((req, res, next) => {
     // set header to append access header to all responses
     res.header('Access-Control-Allow-Origin', '*');
     // set header permissions
-    res.header('Access-Control-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Headers, Access-Control-Request-Method, Access-Control-Request-Headers');
     // give option answer to browser
     if(req.method === 'OPTIONS') {
         res.header('Acess-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE');

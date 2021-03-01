@@ -49,7 +49,7 @@ router.get('/', (req, res, next) => { // parms: route, event handler
     });
 }); 
 
-router.post('/login', (req, res, next) => {
+router.post('/signin', (req, res, next) => {
     User.find({handle: req.body.handle}) 
     .exec()
     .then(user => { // empty or one user 'array'
@@ -164,6 +164,9 @@ router.post('/signup', (req, res, next) => { // route, event handler
                 }
             });
         }
+    })
+    .catch(err => {
+        res.status(500).json({error:err});
     })
 });
 

@@ -5,6 +5,7 @@ export default class Navbar extends Component {
     render() {
         return (
             <nav className='navbar navbar-dark bg-dark navbar-expand-lg'>                
+                <Link to='/signin' className='navbar-brand'>Sign In</Link>
                 <Link to='/signup' className='navbar-brand'>Sign Up</Link>
             </nav>
         )
