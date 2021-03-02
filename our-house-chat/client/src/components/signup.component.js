@@ -10,6 +10,7 @@ export default class SignUp extends Component {
         this.onChangeHandle = this.onChangeHandle.bind(this);
         this.onChangePassword = this.onChangePassword.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
+        this.handleSignInPass = this.handleSignInPass.bind(this)
 
         this.state = {
             name: '',
@@ -50,7 +51,7 @@ export default class SignUp extends Component {
 
         console.log(user);
 
-        axios.post('http://localhost:5000/users/signup', user)
+        axios.post('http://localhost:3000/users/signup', user)
         .then(res => {
             console.log(res.data);
             this.setState({errorMessage: ''})
@@ -61,8 +62,16 @@ export default class SignUp extends Component {
             this.setState({errorMessage: 'Handle is in use by another user.'})
         });
 
-        // window.location = '/signin';
     }
+
+    
+    handleSignInPass(e) {
+        
+        e.preventDefault();
+        
+        this.props.history.push('/signin')
+    }
+
 
     render() {
          return (
@@ -102,12 +111,12 @@ export default class SignUp extends Component {
                     </div>
                     <div><h3 className="text-danger">{this.state.errorMessage}</h3></div>
                     <div className='form-group'>
-                        <input type='submit' value='SignUp' className='btn btn-primary' />
+                        <input type='submit' value='Sign Up' className='btn btn-primary' />
                     </div>
                     {this.state.success &&
                     <div>
-                        <h3 className='text-sucess'>{this.state.handle} created!</h3>
-                        <a href='/signin'>Sign in to create chat rooms!</a>
+                        <h3 className='text-success'>{this.state.handle} created!</h3>
+                        <button onClick={this.handleSignInPass} className='btn btn-primary'>Sign in to create chat rooms!</button>
                     </div>
                     }
                 </form>

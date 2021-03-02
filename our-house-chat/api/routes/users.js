@@ -243,7 +243,7 @@ router.get('/roomList/:userId', checkAuth, (req, res, next) => {
                     request: {
                         type: 'GET',
                         description: 'link to room object',
-                        url: 'http://localhost:3000/rooms/' + room
+                        url: 'http://localhost:5000/rooms/' + room
                     }
                 }
             })
@@ -275,7 +275,7 @@ router.post('/addRoom/:userId/:roomId', checkAuth, (req, res, next) => {
                                 {
                                     type: 'GET',
                                     description: 'link to created room',
-                                    url: 'http://localhost:3000/rooms/' + r_id
+                                    url: 'http://localhost:5000/rooms/' + r_id
                                 }
                             ]
                         })

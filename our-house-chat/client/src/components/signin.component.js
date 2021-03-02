@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -13,14 +14,12 @@ export default class SignIn extends Component {
         this.state = {
             handle: '',
             password: '',
+            errorMessage: '',
+            signin: false
         }
     }
-    
-    onChangeName(e) {
-        this.setState({
-            name: e.target.value
-        });
-    }
+
+  
 
     onChangeHandle(e) {
         this.setState({
@@ -43,9 +42,29 @@ export default class SignIn extends Component {
             password: this.state.password
         }
 
-        console.log(user);
+        
+        fetch('http://localhost:3000/users/signin', {
+            method: "POST",
+            body: JSON.stringify(user),
+            headers : { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+               }
+        }).then(res => {
+            res.json().then(result => {
+                console.log(result);
+                localStorage.setItem('token', JSON.stringify({
+                    token: result.token
+                }))
+                this.setState({signin: true, token: result.token});
+            })
+        })
 
-        window.location = '/';
+        if(this.state.signin) {
+            this.props.history.push('/foyer')
+        } else {
+            this.setState({errorMessage: "Authorization failed."})
+        }
     }
 
     render() {
@@ -54,16 +73,6 @@ export default class SignIn extends Component {
                 <h2>Welcome to Our House</h2>
                 <h3>Sign In</h3>
                 <form onSubmit={this.onSubmit}>
-                    <div className="form-group"> 
-                    <label>Name: </label>
-                    <input type='text'
-                        required
-                        placeholder='Enter Name'
-                        className='form-control'
-                        value={this.state.name}
-                        onChange={this.onChangeName}
-                    />
-                    </div>
                     <div className="form-group"> 
                     <label>Handle: </label>
                     <input type='text'
@@ -84,8 +93,9 @@ export default class SignIn extends Component {
                         onChange={this.onChangePassword}
                     />
                     </div>
+                    <div><h3 className="text-danger">{this.state.errorMessage}</h3></div>
                     <div className='form-group'>
-                        <input type='submit' value='SignUp' className='btn btn-primary' />
+                        <input type='submit' value='Sign In' className='btn btn-primary' />
                     </div>
                 </form>
                 <a href='/signup'>No account? No problem, sign up today!</a>
