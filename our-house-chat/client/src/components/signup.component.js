@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 export default class SignUp extends Component {
@@ -16,6 +15,8 @@ export default class SignUp extends Component {
             name: '',
             handle: '',
             password: '',
+            errorMessage: '',
+            success: false
         }
     }
     
@@ -44,20 +45,27 @@ export default class SignUp extends Component {
         const user = {
             name: this.state.name,
             handle: this.state.handle,
-            password: this.state.password
+            password: this.state.password,
         }
 
         console.log(user);
 
         axios.post('http://localhost:5000/users/signup', user)
-        .then(res => console.log(res.data))
-        .catch(err => console.log(err));
+        .then(res => {
+            console.log(res.data);
+            this.setState({errorMessage: ''})
+            this.setState({success: true});
+        })
+        .catch(err => {
+            console.log(err)
+            this.setState({errorMessage: 'Handle is in use by another user.'})
+        });
 
         // window.location = '/signin';
     }
 
     render() {
-        return (
+         return (
             <div>
                 <h2>Sign Up!</h2>
                 <h3>Create New User</h3>
@@ -92,9 +100,16 @@ export default class SignUp extends Component {
                         onChange={this.onChangePassword}
                     />
                     </div>
+                    <div><h3 className="text-danger">{this.state.errorMessage}</h3></div>
                     <div className='form-group'>
                         <input type='submit' value='SignUp' className='btn btn-primary' />
                     </div>
+                    {this.state.success &&
+                    <div>
+                        <h3 className='text-sucess'>{this.state.handle} created!</h3>
+                        <a href='/signin'>Sign in to create chat rooms!</a>
+                    </div>
+                    }
                 </form>
             </div>
         )
