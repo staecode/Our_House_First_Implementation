@@ -32,6 +32,7 @@ export default class SignIn extends Component {
     }
 
     logUserOut() {
+        this.setState({token: null});
         this.props.history.push('/logout');
     }
     

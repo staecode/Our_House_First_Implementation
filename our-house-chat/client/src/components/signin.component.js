@@ -10,6 +10,7 @@ export default class SignIn extends Component {
         this.onChangeHandle = this.onChangeHandle.bind(this);
         this.onChangePassword = this.onChangePassword.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
+    
 
         this.state = {
             handle: '',
@@ -55,17 +56,19 @@ export default class SignIn extends Component {
                 console.log(result);
                 localStorage.setItem('token', JSON.stringify({
                     token: result.token
-                }))
-                this.setState({signin: true, token: result.token});
+                }));
             })
         })
 
-        if(this.state.signin) {
-            this.props.history.push('/foyer')
+        if(localStorage.getItem('token') != null) {
+            console.log('Token set');
+            this.props.history.push('/foyer');
         } else {
             this.setState({errorMessage: "Authorization failed."})
         }
     }
+
+  
 
     render() {
         return (

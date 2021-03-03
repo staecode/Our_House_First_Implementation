@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken'); // token creation
 // parm, fist action executed once path is reached
 // if we arrive here and there is no token present, we SHOULD fail 
 // this will ensure it
-module.exports  = (req, res, next) => {
+module.exports = (req, res, next) => {
     //jwt package responsible for checking incoming token
     // need secret key, token
     // verify both decodes (checks for based 64 encoding)
